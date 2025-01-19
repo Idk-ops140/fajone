@@ -14,7 +14,7 @@ document.getElementById("uploadBtn").addEventListener("click", () => {
         .then(response => response.json())
         .then(data => {
             console.log("Video uploaded:", data);
-            // Update the video list after uploading
+            // Reload videos after upload
             loadVideos();
         })
         .catch(error => console.error("Error:", error));
@@ -23,12 +23,14 @@ document.getElementById("uploadBtn").addEventListener("click", () => {
     }
 });
 
+// Function to load and display videos
 function loadVideos() {
     fetch("/videos")
         .then(response => response.json())
         .then(videos => {
             const videoContainer = document.getElementById("videoContainer");
-            videoContainer.innerHTML = '';
+            videoContainer.innerHTML = ''; // Clear existing videos
+            
             videos.forEach(video => {
                 const videoElement = document.createElement("div");
                 videoElement.classList.add("video");
@@ -38,6 +40,8 @@ function loadVideos() {
                         <p>${video.username}</p>
                         <button onclick="likeVideo(${video.id})">喜欢</button>
                         <button onclick="commentVideo(${video.id})">评论</button>
+                        <div>点赞: ${video.likes}</div>
+                        <div>评论: ${video.comments.length}</div>
                     </div>
                 `;
                 videoContainer.appendChild(videoElement);
@@ -45,13 +49,18 @@ function loadVideos() {
         });
 }
 
+// Function to handle liking a video
 function likeVideo(videoId) {
     fetch(`/like/${videoId}`, { method: "POST" })
         .then(response => response.json())
-        .then(data => alert("喜欢了该视频"))
+        .then(data => {
+            alert("喜欢了该视频");
+            loadVideos();  // Reload videos to show updated likes
+        })
         .catch(error => console.error("Error:", error));
 }
 
+// Function to handle commenting on a video
 function commentVideo(videoId) {
     const comment = prompt("请输入评论：");
     if (comment) {
@@ -61,9 +70,12 @@ function commentVideo(videoId) {
             headers: { "Content-Type": "application/json" }
         })
         .then(response => response.json())
-        .then(data => alert("评论成功"))
+        .then(data => {
+            alert("评论成功");
+            loadVideos();  // Reload videos to show updated comments
+        })
         .catch(error => console.error("Error:", error));
-    }
 }
 
+// Load videos when the page is loaded
 window.onload = loadVideos;
